@@ -1,0 +1,17 @@
+{
+  "name": "jazzchords",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "midi": "^0.9.4",
+    "vexflow": "^1.2.36",
+    "vextab": "^2.0.10"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}

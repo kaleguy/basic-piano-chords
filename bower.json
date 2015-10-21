@@ -1,0 +1,23 @@
+{
+  "name": "jazzchords",
+  "version": "0.1.0",
+  "authors": [
+    "Joe Orr <joe.orr@gmail.com>"
+  ],
+  "description": "Basic Jazz Chords For Piano",
+  "main": "",
+  "moduleType": [],
+  "license": "MIT",
+  "homepage": "",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "midi-soundfonts-partial": "*"
+  }
+}

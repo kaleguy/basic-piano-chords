@@ -1,0 +1,16 @@
+{
+  "name": "midi-soundfonts-partial",
+  "homepage": "https://github.com/anotherpaul/midi-js-soundfonts",
+  "main": "FluidR3_GM/*/*",
+  "license": "CC BY 3.0",
+  "_release": "94ccdf0335",
+  "_resolution": {
+    "type": "branch",
+    "branch": "master",
+    "commit": "94ccdf0335f0d89f04fd303bc8dddafe3e2898ce"
+  },
+  "_source": "git://github.com/anotherpaul/midi-js-soundfonts.git",
+  "_target": "*",
+  "_originalSource": "midi-soundfonts-partial",
+  "_direct": true
+}
