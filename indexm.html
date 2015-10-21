@@ -1,0 +1,1109 @@
+<HTML>
+	<HEAD>
+		<TITLE>Piano Chords</TITLE>
+
+		<META content="text/html; charset=iso-8859-1" http-equiv=Content-Type>
+
+		<STYLE type=text/css>
+			H1 {text-align:center;font-size:28pt;margin-top:20px;}
+			.wkeys TD  { 
+				BACKGROUND-COLOR: #ffffff; COLOR: #cccccc; 
+				FONT-SIZE: 9pt; FONT-WEIGHT: normal; 
+				HEIGHT: 100px; TEXT-ALIGN: center; 
+				WIDTH: 20px
+			}
+			.note_col TD {
+				width:45px; 
+				background:#ccc;
+			}
+			.wkey_hilite { BACKGROUND-COLOR: #ccccff; HEIGHT: 100px; WIDTH: 20px}
+			.bkey   { BACKGROUND-COLOR: #ffffff; COLOR: #33cccc; FONT-FAMILY: "Times New Roman", Times, serif; FONT-SIZE: 37pt; FONT-WEIGHT: bolder; HEIGHT: 100px; TEXT-ALIGN: center; WIDTH: 20px}
+			.bkey   { BACKGROUND-COLOR: #000000; COLOR: #33cccc; FONT-FAMILY: "Times New Roman", Times, serif; FONT-SIZE: 32pt; FONT-WEIGHT: bolder; HEIGHT: 65px; VERTICAL-ALIGN: bottom; WIDTH: 12px}
+			.space1 { HEIGHT: 60px; WIDTH: 20px}
+			.text1  { BORDER-BOTTOM-COLOR: black; BORDER-BOTTOM-STYLE: none; BORDER-LEFT-COLOR: #ffffff; BORDER-LEFT-STYLE: none; BORDER-RIGHT-COLOR: #ffffff; BORDER-RIGHT-STYLE: none; BORDER-TOP-COLOR: black; BORDER-TOP-STYLE: none; COLOR: #ffffff; FONT-SIZE: 9pt; LINE-HEIGHT: normal; TEXT-ALIGN: center}
+			.text2  { COLOR: #ff0000; sans-serif; FONT-SIZE: 12pt; FONT-WEIGHT: bolder}
+			.text4  { COLOR: #3366cc; FONT-SIZE: 10pt}
+			.dot    { COLOR: #33cccc;  FONT-SIZE: 8pt; FONT-WEIGHT: bolder; WIDTH: 8px}
+			.dot2   { COLOR: #33cccc;  FONT-SIZE: 8pt; FONT-WEIGHT: bolder; WIDTH: 20px}
+			.notice {padding-top:12px; color:#ccc;}
+
+			BODY {
+				font-family: "Open Sans",sans-serif;
+				font-size:8pt;
+			}
+			TD {
+				font-size:9pt;  
+			}
+			SELECT {font-size:10pt}
+			OPTION {
+				font-family: "Open Sans",sans-serif;
+				font-size:10pt;
+				color:#000;
+			}
+			BUTTONx {
+				font-size:10pt;
+				cursor:pointer;
+				border-radius:6px;
+				width:100px;
+
+			}
+			#overlay {
+				background-color: rgba(0, 0, 0, 0.8);
+				z-index: 999;
+				position: absolute;
+				left: 0;
+				top: 0;
+				width: 100%;
+				height: 100%;
+				display: none;
+			}
+
+			.rbutton {
+				font-size:22px;
+				cursor:pointer;
+			}
+
+		</STYLE>
+		<link rel="stylesheet" href="bower_components/font-awesome/css/font-awesome.min.css">
+		<link href="http://fonts.googleapis.com/css?family=Open+Sans:400,800,600" rel="stylesheet" type="text/css">
+
+		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+		<!-- polyfill -->
+		<script src="inc/shim/Base64.js" type="text/javascript"></script>
+		<script src="inc/shim/Base64binary.js" type="text/javascript"></script>
+		<script src="inc/shim/WebAudioAPI.js" type="text/javascript"></script>
+		<script src="inc/timer.js" type="text/javascript"></script>
+
+		<!-- midi.js package -->
+		<script src="js/midi/audioDetect.js" type="text/javascript"></script>
+		<script src="js/midi/gm.js" type="text/javascript"></script>
+		<script src="js/midi/loader.js" type="text/javascript"></script>
+		<script src="js/midi/plugin.audiotag.js" type="text/javascript"></script>
+		<script src="js/midi/plugin.webaudio.js" type="text/javascript"></script>
+		<script src="js/midi/plugin.webmidi.js" type="text/javascript"></script>
+		<!-- utils -->
+		<script src="js/util/dom_request_xhr.js" type="text/javascript"></script>
+		<script src="js/util/dom_request_script.js" type="text/javascript"></script>
+		<script src="js/midi/player.js" type="text/javascript"></script>
+
+		<script src="node_modules/vexflow/releases/vexflow-min.js" type="text/javascript"></script>
+		<script src="node_modules/jquery/dist/jquery.min.js"></script>
+
+		<SCRIPT Language=Javascript>
+
+			var i = 0;
+
+
+			var MaxKey = 43;
+			var instrument_count = 2; // how many midi instruments to load
+
+			var start_pos = 12; //how much to shift right, counting in half tones
+			var root = 4;
+			var chord_type = "maj7";
+			var shift = 0; //flat or sharp?
+			var hid_it = 0;
+			var inversion = 0;
+			var tens_flag = 0; //did user choose tension note chord type?
+			var instrument = 0;
+
+			var pos_closed; 
+			var pos_open;
+			var pos_open2;
+			var start_root;
+			var dot;
+			var noshift;
+
+			chords = {
+				maj  : [4,7],
+				'min' : [3,7],
+				maj7 : [4,7,11],
+				min7 : [3,7,10],
+				maj6 : [4,7,9],
+				min6 : [3,7,9],
+				dom7 : [4,7,10],
+				dim :  [3,6,9],
+				min7b5 : [3,6,10],
+				aug7   : [4,8,10]
+			}     
+
+
+			function init() {
+
+				noshift = document.getElementById("noshift");
+				pos_closed = document.getElementById("pos_closed"); 
+				pos_open = document.getElementById("pos_open");
+				pos_open2 = document.getElementById("pos_open2");
+				start_root = document.getElementById("start_root");
+				maj7 = document.getElementById("maj7");
+				inversion_0 = document.getElementById("inversion_0");
+
+				dot = document.getElementsByName("dot");
+
+				root = 4;
+				chord_type = "maj7";
+				shift = 0; //flat or sharp?
+				start_root.checked = 1;
+				noshift.checked = 1;
+				maj7.selected = 1;
+				inversion_0.checked = 1;
+
+				clear_all();
+				show_chord();
+
+			}
+
+			function set_instrument(me) {
+
+				instrument = me.value;
+
+			}
+
+			function set_chord_type(me) {
+
+				clear_chord();
+
+				chord_type = me.value;
+				switch (chord_type) {
+					case "dim":
+					hid_it = 1;
+					break;   
+					case "maj":
+					pos_closed.style.display = 'none';
+					pos_open.style.display = 'none';
+					pos_open2.style.display = 'none';
+					if (inversion > 2) {
+						inversion = 0;
+						set_inv(document.getElementById('inversion_0'),0);
+					}
+					hid_it = 1;
+					break;   
+					case "min":
+					pos_closed.style.display = 'none';
+					pos_open.style.display = 'none';
+					pos_open2.style.display = 'none';
+					if (inversion > 2) {
+						inversion = 0;
+						set_inv(document.getElementById('inversion_0'),0);
+					}
+					hid_it = 1;
+					break;   
+					default:
+					if (hid_it) {
+						pos_closed.style.display = 'block';
+						pos_open.style.display = 'block';
+						pos_open2.style.display = 'block';
+					}
+				}
+				show_chord();
+
+			}
+
+
+			function set_inv(me, num) {
+
+				var inversions = document.getElementsByName("inversion");
+				for (i = 0; i < inversions.length; i++) {
+					inversions[i].checked = false;
+				}
+				me.checked = true;
+
+				clear_chord();
+
+				var chord_type_select1 = document.getElementById("chord_type_select");
+				var chord_type_select2 = document.getElementById("chord_type_select");
+				if (num == 3) {
+
+					if (tens_flag == 0) {
+						chord_type_select1.style.display = 'none'
+						chord_type_select2.style.display = 'block'
+						tens_flag = 1;
+						chord_type = "maj7";
+
+					}
+				} else {
+					if (tens_flag) {
+						tens_flag = 0;
+						chord_type_select2.style.display = 'none'
+						chord_type_select1.style.display = 'block'
+					}
+				}
+
+
+				shift = 0;
+				inversion = num;
+
+				show_chord();
+				return 0;
+			}
+
+			function set_root(me, num) {
+
+				var roots = document.getElementsByName("root");
+				for (i = 0; i < roots.length; i++) {
+					roots[i].checked = false;
+				} 
+				me.checked = true;
+				clear_chord();
+				noshift.checked = 1; // new chord, so turn off sharp/flat
+				shift = 0; 
+				root = num;
+				show_chord();
+
+				return 0;
+			}
+
+			function set_shift(me, num) {
+
+				var shift_radios = document.getElementsByName("shift");
+				for (i = 0; i < shift_radios.length; i++) {
+					shift_radios[i].checked = false;
+				}
+				me.checked = true;
+				clear_chord();
+				shift = num;
+				show_chord();
+
+				return 0;
+
+			}
+
+			function clear_chord () {
+				hilite("", start_pos + root + 4 + shift, chord_type);
+			}
+
+			function show_chord () {
+				hilite("o", start_pos + root + 4 + shift, chord_type);
+			}
+
+
+			function hilite (ch, tmp_root, chord_type) {
+				var base = 0;   
+
+				var chord = chords[chord_type];
+
+				var shift1 = 0;  
+				var shift2 = 0;  
+				var shift3 = 0;
+				var shift4 = 0;
+
+				switch (inversion) {
+					case 1 :
+					shift1 = 12;
+					break;
+					case 2 :
+					shift1 = 12;
+					shift2 = 12;
+					break;
+					case 3: 
+					shift1 = 14;
+					//shift3 = 2;
+					//shift4 = -12;
+					break;
+					case 4 :
+					shift1 = -12
+					shift3 = -12
+				}  
+				base = tmp_root - 1;
+
+				var chord_notes = [
+				base + shift1,
+				base + chord[0] + shift2,
+				base + chord[1] + shift3
+				];
+				if (chord[2]){
+					chord_notes.push(base + chord[2] + shift4); 
+				}
+				chord_notes.forEach(
+				function(c){
+					dot[c].innerHTML = ch;  
+				}
+				);
+
+				// if ch means we are showing chord, not removing
+				if (ch) {
+					displayChord(chord_notes);
+					try {
+						playChord();
+					} catch(e){
+						// page may not be intialized
+					}
+				}
+			}
+
+
+			function playChord () {
+				//ch, tmp_root, chord_type
+
+				var shift1 = 0;  
+				var shift2 = 0;  
+				var shift3 = 0;
+				var shift4 = 0;
+
+				var base;   
+				var tmp_root = start_pos + root + 45 + shift;
+
+				var chord = chords[chord_type];
+				switch (inversion) {
+					case 1 :
+					shift1 = 12;
+					break;
+					case 2 :
+					shift1 = 12;
+					shift2 = 12;
+					break;
+					case 3: 
+					shift1 = 14;
+					//shift3 = 2;
+					//shift4 = -12;
+					break;
+					case 4 :
+					shift1 = -12
+					shift3 = -12
+				}  
+
+				base = tmp_root - 1;
+
+				note = base + shift1;              playNote (note);
+				note = base + chord[0] + shift2;   playNote (note); 
+				note = base + chord[1] + shift3;   playNote (note);
+				if (chord[2]) {
+					note = base + chord[2] + shift4; playNote (note) 
+				}
+
+			}
+
+			function clear_all () {
+				var i;
+				for (i = 0; i < MaxKey; i++) {
+					dot[i].innerHTML= "";       
+				}
+			}
+
+		</SCRIPT>
+
+	</HEAD>
+	<BODY bgColor=#ffffff>
+
+		<div id="title"><h1>Basic Chords</h1></div>
+		<DIV id=Layer5 
+
+			style="HEIGHT: 115px; left:50%; MARGIN-LEFT: -300px; 
+			POSITION: absolute; TOP: 40px; WIDTH: 600px; Z-INDEX: 5"> 
+			<DIV id=Layer4 style="LEFT: 6px; 
+				POSITION: absolute; TOP: 383px; WIDTH: 636px; Z-INDEX: 4"> 
+				<TABLE border=0 cellSpacing=2 height=66>
+					<TBODY> 
+						<TR> 
+							<TD class=dot  name=dot id=dot>o</TD>
+							<TD class=dot  name=dot id=dot vAlign=top>o</TD>
+							<TD class=dot  name=dot id=dot>o</TD>
+							<TD class=dot  name=dot id=dot vAlign=top>o</TD>
+							<TD class=dot  name=dot id=dot>o</TD>
+							<TD class=dot  name=dot id=dot vAlign=top>o</TD>
+							<TD class=dot2 name=dot id=dot>o</TD>
+							<TD class=dot  name=dot id=dot>o</TD>
+							<TD class=dot  name=dot id=dot vAlign=top>o</TD>
+							<TD class=dot  name=dot id=dot>o</TD>
+							<TD class=dot  name=dot id=dot vAlign=top>o</TD>
+							<TD class=dot2 name=dot id=dot>o</TD>
+							<TD class=dot  name=dot id=dot>o</TD>
+							<TD class=dot  name=dot id=dot vAlign=top>o</TD>
+							<TD class=dot  name=dot id=dot>o</TD>
+							<TD class=dot  name=dot id=dot vAlign=top>o</TD>
+							<TD class=dot  name=dot id=dot>o</TD>
+							<TD class=dot  name=dot id=dot vAlign=top>o</TD>
+							<TD class=dot2 name=dot id=dot>o</TD>
+							<TD class=dot  name=dot id=dot>o</TD>
+							<TD class=dot  name=dot id=dot vAlign=top>o</TD>
+							<TD class=dot  name=dot id=dot>o</TD>
+							<TD class=dot  name=dot id=dot vAlign=top>o</TD>
+							<TD class=dot2 name=dot id=dot>o</TD>
+							<TD class=dot  name=dot id=dot>o</TD>
+							<TD class=dot  name=dot id=dot vAlign=top>o</TD>
+							<TD class=dot  name=dot id=dot>o</TD>
+							<TD class=dot  name=dot id=dot vAlign=top>o</TD>
+							<TD class=dot  name=dot id=dot>o</TD>
+							<TD class=dot  name=dot id=dot vAlign=top>o</TD>
+							<TD class=dot2 name=dot id=dot>o</TD>
+							<TD class=dot  name=dot id=dot>o</TD>
+							<TD class=dot  name=dot id=dot vAlign=top>o</TD>
+							<TD class=dot  name=dot id=dot>o</TD>
+							<TD class=dot  name=dot id=dot vAlign=top>o</TD>
+							<TD class=dot2 name=dot id=dot>o</TD>
+							<TD class=dot  name=dot id=dot>o</TD>
+							<TD class=dot  name=dot id=dot vAlign=top>o</TD>
+							<TD class=dot  name=dot id=dot>o</TD>
+							<TD class=dot  name=dot id=dot vAlign=top>o</TD>
+							<TD class=dot  name=dot id=dot>o</TD>
+							<TD class=dot  name=dot id=dot vAlign=top>o</TD>
+							<TD class=dot2 name=dot id=dot>o</TD>
+						</TR>
+					</TBODY> 
+				</TABLE>
+			</DIV>
+			<DIV id=Layer1 
+				style="BACKGROUND-COLOR: #cccccc; BORDER-BOTTOM: #000000 1px; 
+				BORDER-LEFT: #000000 1px; BORDER-RIGHT: #000000 1px; 
+				BORDER-TOP: #000000 1px; HEIGHT: 115px; LEFT: 0px; 
+				POSITION: absolute; TOP: 313px; WIDTH: 602px; Z-INDEX: 1; 
+				layer-background-color: #CCCCCC"> 
+
+				<TABLE border=0 cellSpacing=2>
+					<TBODY> 
+						<TR class=text1> 
+							<TD>F</TD>
+							<TD>G</TD>
+							<TD>A</TD>
+							<TD>B</TD>
+							<TD>C</TD>
+							<TD>D</TD>
+							<TD>E</TD>
+							<TD>F</TD>
+							<TD>G</TD>
+							<TD>A</TD>
+							<TD>B</TD>
+							<TD class=text2>C</TD>
+							<TD>D</TD>
+							<TD>E</TD>
+							<TD>F</TD>
+							<TD>G</TD>
+							<TD>A</TD>
+							<TD>B</TD>
+							<TD>C</TD>
+							<TD>D</TD>
+							<TD>E</TD>
+							<TD>F</TD>
+							<TD>G</TD>
+							<TD>A</TD>
+							<TD>B</TD>
+						</TR>
+						<TR vAlign=bottom halign="center" class="wkeys"> 
+							<TD>F</TD>
+							<TD>G</TD>
+							<TD>A</TD>
+							<TD>B</TD>
+							<TD>C</TD>
+							<TD>D</TD>
+							<TD>E</TD>
+							<TD>F</TD>
+							<TD>G</TD>
+							<TD>A</TD>
+							<TD>B</TD>
+							<TD>C</TD>
+							<TD>D</TD>
+							<TD>E</TD>
+							<TD>F</TD>
+							<TD>G</TD>
+							<TD>A</TD>
+							<TD>B</TD>
+							<TD>C</TD>
+							<TD>D</TD>
+							<TD>E</TD>
+							<TD>F</TD>
+							<TD>G</TD>
+							<TD>A</TD>
+							<TD>B</TD>
+						</TR>
+					</TBODY> 
+				</TABLE>
+			</DIV>
+			<DIV id=Layer2 
+				style="HEIGHT: 63px; LEFT: 13px; POSITION: absolute; 
+				TOP: 335px; WIDTH: 628px; Z-INDEX: 2"> 
+				<TABLE border=0 cellSpacing=2>
+					<TBODY> 
+						<TR> 
+							<TD class=space1> 
+								<TABLE>
+									<TBODY> 
+										<TR> 
+											<TD class=bkey></TD>
+										</TR>
+									</TBODY> 
+								</TABLE>
+							</TD>
+							<TD class=space1> 
+								<TABLE>
+									<TBODY> 
+										<TR> 
+											<TD class=bkey></TD>
+										</TR>
+									</TBODY> 
+								</TABLE>
+							</TD>
+							<TD class=space1> 
+								<TABLE>
+									<TBODY> 
+										<TR> 
+											<TD class=bkey></TD>
+										</TR>
+									</TBODY> 
+								</TABLE>
+							</TD>
+							<TD class=space1> 
+								<TABLE>
+									<TBODY> 
+										<TR> 
+											<TD>&nbsp;</TD>
+										</TR>
+									</TBODY> 
+								</TABLE>
+							</TD>
+							<TD class=space1> 
+								<TABLE>
+									<TBODY> 
+										<TR> 
+											<TD class=bkey></TD>
+										</TR>
+									</TBODY> 
+								</TABLE>
+							</TD>
+							<TD class=space1> 
+								<TABLE>
+									<TBODY> 
+										<TR> 
+											<TD class=bkey></TD>
+										</TR>
+									</TBODY> 
+								</TABLE>
+							</TD>
+							<TD class=space1> 
+								<TABLE>
+									<TBODY> 
+										<TR> 
+											<TD>&nbsp;</TD>
+										</TR>
+									</TBODY> 
+								</TABLE>
+							</TD>
+							<TD class=space1> 
+								<TABLE>
+									<TBODY> 
+										<TR> 
+											<TD class=bkey></TD>
+										</TR>
+									</TBODY> 
+								</TABLE>
+							</TD>
+							<TD class=space1> 
+								<TABLE>
+									<TBODY> 
+										<TR> 
+											<TD class=bkey></TD>
+										</TR>
+									</TBODY> 
+								</TABLE>
+							</TD>
+							<TD class=space1> 
+								<TABLE>
+									<TBODY> 
+										<TR> 
+											<TD class=bkey>&nbsp;</TD>
+										</TR>
+									</TBODY> 
+								</TABLE>
+							</TD>
+							<TD class=space1> 
+								<TABLE>
+									<TBODY> 
+										<TR> 
+											<TD>&nbsp;</TD>
+										</TR>
+									</TBODY> 
+								</TABLE>
+							</TD>
+							<TD class=space1> 
+								<TABLE>
+									<TBODY> 
+										<TR> 
+											<TD class=bkey></TD>
+										</TR>
+									</TBODY> 
+								</TABLE>
+							</TD>
+							<TD class=space1> 
+								<TABLE>
+									<TBODY> 
+										<TR> 
+											<TD class=bkey></TD>
+										</TR>
+									</TBODY> 
+								</TABLE>
+							</TD>
+							<TD class=space1> 
+								<TABLE>
+									<TBODY> 
+										<TR> 
+											<TD>&nbsp;</TD>
+										</TR>
+									</TBODY> 
+								</TABLE>
+							</TD>
+							<TD class=space1> 
+								<TABLE>
+									<TBODY> 
+										<TR> 
+											<TD class=bkey></TD>
+										</TR>
+									</TBODY> 
+								</TABLE>
+							</TD>
+							<TD class=space1> 
+								<TABLE>
+									<TBODY> 
+										<TR> 
+											<TD class=bkey></TD>
+										</TR>
+									</TBODY> 
+								</TABLE>
+							</TD>
+							<TD class=space1> 
+								<TABLE>
+									<TBODY> 
+										<TR> 
+											<TD class=bkey></TD>
+										</TR>
+									</TBODY> 
+								</TABLE>
+							</TD>
+							<TD class=space1> 
+								<TABLE>
+									<TBODY> 
+										<TR> 
+											<TD>&nbsp;</TD>
+										</TR>
+									</TBODY> 
+								</TABLE>
+							</TD>
+							<TD class=space1> 
+								<TABLE>
+									<TBODY> 
+										<TR> 
+											<TD class=bkey></TD>
+										</TR>
+									</TBODY> 
+								</TABLE>
+							</TD>
+							<TD class=space1> 
+								<TABLE>
+									<TBODY> 
+										<TR> 
+											<TD class=bkey></TD>
+										</TR>
+									</TBODY> 
+								</TABLE>
+							</TD>
+							<TD class=space1> 
+								<TABLE>
+									<TBODY> 
+										<TR> 
+											<TD class=space1></TD>
+										</TR>
+									</TBODY> 
+								</TABLE>
+							</TD>
+							<TD class=space1> 
+								<TABLE>
+									<TBODY> 
+										<TR> 
+											<TD class=bkey></TD>
+										</TR>
+									</TBODY> 
+								</TABLE>
+							</TD>
+							<TD class=space1> 
+								<TABLE>
+									<TBODY> 
+										<TR> 
+											<TD class=bkey></TD>
+										</TR>
+									</TBODY> 
+								</TABLE>
+							</TD>
+							<TD class=space1> 
+								<TABLE>
+									<TBODY> 
+										<TR> 
+											<TD class=bkey></TD>
+										</TR>
+									</TBODY> 
+								</TABLE>
+							</TD>
+						</TR>
+					</TBODY> 
+				</TABLE>
+			</DIV>
+
+			<!-- End of keyboard, start of options --> 
+			<DIV id=Layer3 
+				style="HEIGHT: 178px; LEFT: 38px; POSITION: absolute; 
+				TOP: 40px; WIDTH: 524px; Z-INDEX: 3"> 
+				<TABLE align=center border=0 cellPadding=6 width=400>
+					<TBODY>
+						<tr>
+							<td align=center colspan=4>
+								<table align=center>	 
+									<TD> 
+									<INPUT name=root onclick="set_root(this, 1)" type=radio value=a></TD>
+
+
+									<TD> 
+									<INPUT name=root onclick="set_root(this, 3)" type=radio value=b></TD>
+
+
+									<TD> 
+									<INPUT checked="checked" id=start_root name=root onclick="set_root(this, 4)" type=radio value=c></TD>
+
+
+									<TD> 
+									<INPUT name=root onclick="set_root(this, 6)" type=radio value=d></TD>
+
+
+									<TD> 
+									<INPUT name=root onclick="set_root(this, 8)" type=radio value=e></TD>
+
+
+									<TD> 
+									<INPUT name=root onclick="set_root(this, 9)" type=radio value=f></TD>
+
+
+									<TD> 
+									<INPUT name=root onclick="set_root(this, 11)" type=radio value=g></TD>
+
+
+									<TD><INPUT checked="checked" value="" id=noshift name=shift onclick="set_shift(this, 0)" type=radio></TD>
+
+
+									<TD><INPUT name=shift onclick="set_shift(this, 1)" type=radio></TD>
+
+
+									<TD><INPUT name=shift onclick="set_shift(this, -1)" type=radio><I></I></TD>
+
+
+
+								</tr>
+								<tr>
+									<td align=center>A</td>
+									<td align=center>B</td>
+									<td align=center>C</td>
+									<td align=center>D</td>
+									<td align=center>E</td>
+									<td align=center>F</td>
+									<td align=center>G</td>
+									<td align=center></td>
+									<td align=center>#</td>
+									<td align=center>b</td>
+								</tr>
+							</table>
+
+
+
+
+
+						</td>
+
+
+					</tr> 
+
+
+					<TD valign="top">
+						<SPAN id=chord_type_select1> 
+							<SELECT class=text4 name=select 
+								onclick=set_chord_type(this) 
+								onchange=set_chord_type(this);
+								size=10
+								style="width:120px;border:1px solid #ccc">
+								<OPTION value=maj>Major Triad</OPTION>
+								<OPTION value=min>Minor Triad</OPTION>
+								<OPTION value=maj6>Major 6th</OPTION>
+								<OPTION value=min6>Minor 6th</OPTION>
+								<OPTION selected="selected" id="maj7" value=maj7>Major 7th</OPTION>
+								<OPTION value=dom7>Dominant 7th</OPTION>
+								<OPTION value=min7>Minor 7th</OPTION>
+								<OPTION value=min7b5>Minor 7th b5</OPTION>
+								<OPTION value=dim>Diminished</OPTION>
+								<OPTION value=aug7>Augmented 7th</OPTION>
+							</SELECT>
+						</SPAN>
+						<SPAN id=chord_type_select2 
+
+							style="DISPLAY: none"> 
+							<SELECT class=text4 id=chord_type_select 
+
+								name=select onclick=set_chord_type(this) size=8>
+								<OPTION 
+
+								value=maj6>Major 6th</OPTION>
+								<OPTION value=min6>Minor 6th</OPTION>
+								<OPTION selected value=maj7>Major 7th</OPTION>
+								<OPTION value=dom7>Dominant 7th</OPTION>
+								<OPTION value=min7>Minor 7th</OPTION>
+								<OPTION value=min7b5>Minor 7th b5</OPTION>
+								<OPTION 
+
+								value=aug7>Augmented 7th</OPTION>
+							</SELECT>
+						</SPAN>              
+					</TD>
+					<TD valign="middle"> 
+						<TABLE border=0 width=170>
+							<TBODY> 
+								<TR align=middle> 
+									<TD><SPAN id=testx><B>one hand</B></SPAN></TD>
+								</TR>
+								<TR class="note_col"> 
+									<TD><INPUT id="inversion_0" checked name=inversion onclick="set_inv(this, 0)" type=radio> Standard </TD>
+								</TR>
+								<TR class="note_col"> 
+									<TD class="note_col"><INPUT name=inversion onclick="set_inv(this, 1)" type=radio> 1st inversion</TD>
+								</TR>
+								<TR class="note_col"> 
+									<TD><INPUT name=inversion onclick="set_inv(this, 2)" type=radio> 2nd inversion&nbsp;&nbsp;</TD>
+								</TR>
+								<TR class="note_col"> 
+									<TD nowrap style="width:170px" id=pos_closed><INPUT name=inversion onclick="set_inv(this, 3)" type=radio>Closed with tension note&nbsp;&nbsp; </TD>
+								</TR>
+								<TR align=middle id=pos_open> 
+									<TD><SPAN><B>two hands</B></SPAN></TD>
+								</TR>
+								<TR class="note_col"id=pos_open2> 
+									<TD style="width:170px;"><INPUT name=inversion onclick="set_inv(this, 4)" type=radio><SPAN>open</SPAN></TD>
+								</TR>
+							</TBODY> 
+						</TABLE>
+
+					</TD>
+					<td>
+						<canvas id='stave' style="border:1px solid #ccc;" width="120" height="190"></canvas>
+
+					</td>
+				</TR>
+			</TBODY> 
+		</TABLE>
+
+	</DIV>
+</DIV>
+<div style='height:400px'></div>
+<TABLE align=center border=0 style=''>
+	<TBODY> 
+
+		<TR align="center"> 
+			<td onclick="playChord()">
+				<span class='rbutton'>
+					<i class="fa fa-play-circle-o"></i>
+				</span>
+			</td>
+			<TD> 
+				<select style="width:160px;" id="instrument" size="1" onClick="set_instrument(this)">
+				</select>
+			</TD>
+		</tr>
+		<tr align="center">
+			<td colspan=2 class="notice">Sound Requires Chrome Browser</td>
+		</TR>
+		<tr align="center">
+			<td class="notice" colspan=2>
+				<a class="notice" href="https://github.com/kaleguy/basic-piano-chords">Source on Github</a>
+			</td>
+		</TR>		
+	</TBODY> 
+</TABLE>
+<div id="overlay"></div>
+
+</BODY>
+</HTML>
+
+<script type="text/javascript">
+
+	$("#overlay").css({
+		"color": "#000",
+		"position": "absolute", 
+		"width": $(document).width(), 
+		"height": $(document).height(),
+		"z-index": 99999, 
+	}).fadeTo(0, 0.8);
+
+
+	// load midi
+	var instrument = "acoustic_grand_piano";
+	window.onload = function () {
+
+		var instruments = [	
+
+		"acoustic_grand_piano",
+		"acoustic_guitar_nylon",
+		"acoustic_guitar_steel",
+		"cello",
+		"distortion_guitar",
+		"electric_bass_finger",
+		"electric_bass_pick",
+		"electric_guitar_jazz",
+		"electric_guitar_muted",
+		"lead_1_square",
+		"lead_2_sawtooth",
+		"overdriven_guitar",
+		"pad_1_new_age",
+		"pad_2_warm",
+		"pad_3_polysynth"                  
+		];
+
+
+		instruments = instruments.slice(0,instrument_count);	
+
+		MIDI.loader = new sketch.ui.Timer;
+		MIDI.loadPlugin({
+			soundfontUrl: "./bower_components/midi-soundfonts-partial/FluidR3_GM/",
+			instruments: instruments,
+			onprogress: function(state, progress) {
+				MIDI.loader.setValue(progress * 100);
+			},
+
+			onsuccess: function() {
+				$.each(MIDI.Soundfont,function(k, v){
+					$('#instrument').append(
+					'<option value="' + k + '">' + 
+					k.replace(/_/g,' ') + 
+					'</option>'
+					);
+				});
+				$('#overlay').fadeOut();
+			}
+		});
+
+	};
+
+
+	var playNote = function(note, instrument){
+		instrument = $('#instrument').val();
+		MIDI.programChange(0, MIDI.GM.byName[instrument].number);
+		var delay = 0; // play one note every quarter second
+		var velocity = 127; // how hard the note hits
+		MIDI.setVolume(0, 127);
+		MIDI.noteOn(0, note, velocity, delay);
+		MIDI.noteOff(0, note, delay + 0.75);
+
+	}
+
+	// convert chord numbers into note names, differing by base note
+	var midiToNote = function(note){
+		var octave = Math.floor(note/12)-1;
+		note = note % 12;
+		notes = [];
+		notes[4] = ['c','db','d','eb','e','f','gb','g','g#','a','bb','b']; //C
+		notes[6] = ['c','c#','d','d#','e','f','f#','g','ab','a','a#','b']; //D
+		notes[8] = ['c','db','d','d#','e','f','f#','g','g#','a','bb','b']; //E
+		notes[9] = ['c','c#','d','eb','e','f','f#','g','ab','a','bb','b']; //F
+		notes[11] = ['c','db','d','d#','e','f','f#','g','g#','a','bb','b']; //G
+		notes[1] = ['c','c#','d','eb','e','f','f#','g','g#','a','bb','b']; //A
+		notes[3] = ['c','c#','d','d#','e','f','f#','g','g#','a','a#','b']; //B
+
+		var myNotes = notes[root];
+		if (! myNotes) {return}
+
+		return myNotes[note] + "/" + octave;  
+	}
+
+
+	var displayChord = function(chord){
+
+
+		// set up staves
+		var canvas = $("#stave")[0];
+		var renderer = new Vex.Flow.Renderer(canvas,
+		Vex.Flow.Renderer.Backends.CANVAS);
+		var ctx = renderer.getContext();
+
+		ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+		// if base is # or b then don't display notation
+		if (shift) {return} 
+
+		var stave = new Vex.Flow.Stave(10, 0, 100);
+		stave.addClef("treble").setContext(ctx).draw()  
+		var bass_stave = new Vex.Flow.Stave(10, 80, 100);
+		bass_stave.addClef("bass").setContext(ctx).draw()   
+
+		// convert the chord numbers into note names for Vex
+		var base_note = (chord[0] + 41) % 12;
+		var chord_notes = chord.map(
+		function(note){
+			note = note + 41;
+			return midiToNote(note, base_note);
+		}
+		);
+
+		var bass_chord_notes = null;
+		if (inversion/1 === 4){
+			bass_chord_notes = [];
+			var tmp_chord_notes = [];
+			chord_notes.forEach(function(n){
+				if (n.match(/[23]/)){
+					bass_chord_notes.push(n);	
+				} else {
+					tmp_chord_notes.push(n);	
+				}
+			}
+			);
+			chord_notes = tmp_chord_notes;
+		}
+
+		// treble clef notes
+		var notes = [
+		new Vex.Flow.StaveNote({ keys: chord_notes, duration: "w" })
+		];
+
+		add_accidentals(notes[0]); 
+		add_to_stave(notes,stave);
+
+		// bass clef notes
+		if (! bass_chord_notes){return}
+
+		var bass_notes = [
+		new Vex.Flow.StaveNote({ clef:"bass", keys: bass_chord_notes, duration: "w" })  
+		];    
+
+		add_accidentals(bass_notes[0]);
+		add_to_stave(bass_notes, bass_stave);
+
+
+		function add_to_stave(notes,stave) {
+			var voice = new Vex.Flow.Voice({
+				num_beats: 1,
+				beat_value: 1,
+				resolution: Vex.Flow.RESOLUTION
+			});
+
+			// Add notes to voice
+			voice.addTickables(notes);
+
+			// Format and justify the notes to 500 pixels
+			var formatter = new Vex.Flow.Formatter().
+			joinVoices([voice]).format([voice], 500);
+
+			// Render voice
+			voice.draw(ctx, stave);
+		}
+
+		function add_accidentals(notes){
+
+			notes.keyProps.forEach(
+			function(n,i){
+				if (n.key[1] === 'B'){
+					notes.addAccidental(i, new Vex.Flow.Accidental("b"));
+				}
+				if (n.key[1] === '#'){
+					notes.addAccidental(i, new Vex.Flow.Accidental("#"));
+				}
+			}
+			);    	
+
+		}
+
+
+	}
+	window.
+	init();
+
+
+</script>
+

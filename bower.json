@@ -18,6 +18,8 @@
     "tests"
   ],
   "dependencies": {
-    "midi-soundfonts-partial": "*"
+    "midi-soundfonts-partial": "*",
+    "qwerty-hancock": "~0.5.1",
+    "font-awesome": "fontawesome#~4.4.0"
   }
 }
