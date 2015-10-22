@@ -12,9 +12,11 @@
 				HEIGHT: 100px; TEXT-ALIGN: center; 
 				WIDTH: 20px
 			}
-			.note_col TD {
-				width:45px; 
+			.note_col  {
 				background:#ccc;
+				border-bottom:1px solid #fff;
+        padding:2px;
+        font-size:10pt;
 			}
 			.wkey_hilite { BACKGROUND-COLOR: #ccccff; HEIGHT: 100px; WIDTH: 20px}
 			.bkey   { BACKGROUND-COLOR: #ffffff; COLOR: #33cccc; FONT-FAMILY: "Times New Roman", Times, serif; FONT-SIZE: 37pt; FONT-WEIGHT: bolder; HEIGHT: 100px; TEXT-ALIGN: center; WIDTH: 20px}
@@ -32,7 +34,7 @@
 				font-size:8pt;
 			}
 			TD {
-				font-size:9pt;  
+				font-size:10pt;  
 			}
 			SELECT {font-size:10pt}
 			OPTION {
@@ -61,6 +63,12 @@
 			.rbutton {
 				font-size:22px;
 				cursor:pointer;
+			}
+			.label {
+				
+				width:190px;
+        text-align:center;
+        font-weight:bold;				
 			}
 
 		</STYLE>
@@ -95,7 +103,7 @@
 
 
 			var MaxKey = 43;
-			var instrument_count = 2; // how many midi instruments to load
+			var instrument_count = 4; // how many midi instruments to load
 
 			var start_pos = 12; //how much to shift right, counting in half tones
 			var root = 4;
@@ -125,6 +133,7 @@
 				min7b5 : [3,6,10],
 				aug7   : [4,8,10]
 			}     
+
 
 
 			function init() {
@@ -385,6 +394,7 @@
 	<BODY bgColor=#ffffff>
 
 		<div id="title"><h1>Basic Chords</h1></div>
+
 		<DIV id=Layer5 
 
 			style="HEIGHT: 115px; left:50%; MARGIN-LEFT: -300px; 
@@ -845,32 +855,27 @@
 							</SELECT>
 						</SPAN>              
 					</TD>
-					<TD valign="middle"> 
-						<TABLE border=0 width=170>
-							<TBODY> 
-								<TR align=middle> 
-									<TD><SPAN id=testx><B>one hand</B></SPAN></TD>
-								</TR>
-								<TR class="note_col"> 
-									<TD><INPUT id="inversion_0" checked name=inversion onclick="set_inv(this, 0)" type=radio> Standard </TD>
-								</TR>
-								<TR class="note_col"> 
-									<TD class="note_col"><INPUT name=inversion onclick="set_inv(this, 1)" type=radio> 1st inversion</TD>
-								</TR>
-								<TR class="note_col"> 
-									<TD><INPUT name=inversion onclick="set_inv(this, 2)" type=radio> 2nd inversion&nbsp;&nbsp;</TD>
-								</TR>
-								<TR class="note_col"> 
-									<TD nowrap style="width:170px" id=pos_closed><INPUT name=inversion onclick="set_inv(this, 3)" type=radio>Closed with tension note&nbsp;&nbsp; </TD>
-								</TR>
-								<TR align=middle id=pos_open> 
-									<TD><SPAN><B>two hands</B></SPAN></TD>
-								</TR>
-								<TR class="note_col"id=pos_open2> 
-									<TD style="width:170px;"><INPUT name=inversion onclick="set_inv(this, 4)" type=radio><SPAN>open</SPAN></TD>
-								</TR>
-							</TBODY> 
-						</TABLE>
+					<TD valign="middle" id='inversions'>
+
+						<div class="label"> One Hand</div>
+						<div class="note_col"> 
+							<INPUT id="inversion_0" checked name=inversion onclick="set_inv(this, 0)" type=radio> Standard 
+						</div>
+						<div class="note_col"> 
+							<INPUT name=inversion onclick="set_inv(this, 1)" type=radio> 1st inversion
+						</div>
+						<div class="note_col"> 
+							<INPUT name=inversion onclick="set_inv(this, 2)" type=radio> 2nd inversion
+						</div>
+						<div class="note_col" id=pos_closed>
+							<INPUT name=inversion onclick="set_inv(this, 3)" type=radio> Closed with tension note
+						</div>
+						<div class="label" id=pos_open>Two Hands</div>
+						<div class="note_col"id=pos_open2> 
+							<INPUT name=inversion onclick="set_inv(this, 4)" type=radio> Open
+						</div>	
+
+
 
 					</TD>
 					<td>
@@ -932,10 +937,7 @@
 
 		"acoustic_grand_piano",
 		"acoustic_guitar_nylon",
-		"acoustic_guitar_steel",
 		"cello",
-		"distortion_guitar",
-		"electric_bass_finger",
 		"electric_bass_pick",
 		"electric_guitar_jazz",
 		"electric_guitar_muted",
@@ -944,7 +946,10 @@
 		"overdriven_guitar",
 		"pad_1_new_age",
 		"pad_2_warm",
-		"pad_3_polysynth"                  
+		"pad_3_polysynth",                  
+		"acoustic_guitar_steel",
+		"distortion_guitar",
+		"electric_bass_finger"
 		];
 
 
