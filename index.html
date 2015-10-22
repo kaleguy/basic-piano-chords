@@ -129,7 +129,7 @@
 			}     
 
 			function init() {
-
+       
 				noshift = document.getElementById("noshift");
 				pos_closed = document.getElementById("pos_closed"); 
 				pos_open = document.getElementById("pos_open");
@@ -784,6 +784,7 @@
 									<TD> 
 										<INPUT name=root onclick="set_root(this, 11)" type=radio value=g>
 									</TD>
+									<td></td>
 									<TD>
 										<INPUT checked="checked" value="" id=noshift name=shift onclick="set_shift(this, 0)" type=radio>
 									</TD>
@@ -802,8 +803,8 @@
 									<td align=center>E</td>
 									<td align=center>F</td>
 									<td align=center>G</td>
-									<td align=center>
-									</td>
+									<td><div style='width:10px'></div></td>
+									<td align=center></td>
 									<td align=center>#</td>
 									<td align=center>b</td>
 								</tr>
@@ -968,6 +969,8 @@
 					);
 				});
 				$('#overlay').fadeOut();
+				$('#instrument').find('option[value="acoustic_grand_piano"]').attr('selected','selected');
+
 			}
 		});
 
